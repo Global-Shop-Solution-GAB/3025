@@ -1,0 +1,205 @@
+Program.Sub.ScreenSU.Start
+gui.form1..create
+gui.form1..caption("Reason Code")
+gui.form1..size(3705,3135)
+gui.form1..position(0,0)
+gui.form1..event(unload,form1_unload)
+gui.form1..alwaysontop(False)
+gui.form1..fontname("Arial")
+gui.form1..fontsize(8)
+gui.form1..forecolor(0)
+gui.form1..fontstyle(,,,,)
+gui.form1..BackColor(-2147483633)
+gui.form1..controlbox(True)
+gui.form1..maxbutton(True)
+gui.form1..minbutton(True)
+gui.form1..mousepointer(0)
+gui.form1..moveable(True)
+gui.form1..sizeable(True)
+gui.form1..ShowInTaskBar(True)
+gui.form1..titlebar(True)
+gui.form1.txtReason.create(textbox)
+gui.form1.txtReason.text("")
+gui.form1.txtReason.visible(True)
+gui.form1.txtReason.size(2115,300)
+gui.form1.txtReason.zorder(0)
+gui.form1.txtReason.position(600,1285)
+gui.form1.txtReason.enabled(True)
+gui.form1.txtReason.alignment(0)
+gui.form1.txtReason.fontname("Arial")
+gui.form1.txtReason.fontsize(8)
+gui.form1.txtReason.maxLength(15)
+gui.form1.txtReason.BackColor(-2147483643)
+gui.form1.lbl1.create(label)
+gui.form1.lbl1.caption("Please enter reason code for this lot/bin")
+gui.form1.lbl1.backstyle(0)
+gui.form1.lbl1.visible(True)
+gui.form1.lbl1.size(2955,255)
+gui.form1.lbl1.zorder(0)
+gui.form1.lbl1.position(200,155)
+gui.form1.lbl1.enabled(True)
+gui.form1.lbl1.alignment(0)
+gui.form1.lbl1.fontname("Arial")
+gui.form1.lbl1.fontsize(8)
+gui.form1.lbl1.BackColor(-2147483633)
+gui.form1.lbl2.create(label)
+gui.form1.lbl2.caption("Lot:")
+gui.form1.lbl2.backstyle(0)
+gui.form1.lbl2.visible(True)
+gui.form1.lbl2.size(405,255)
+gui.form1.lbl2.zorder(0)
+gui.form1.lbl2.position(575,500)
+gui.form1.lbl2.enabled(True)
+gui.form1.lbl2.alignment(0)
+gui.form1.lbl2.fontname("Arial")
+gui.form1.lbl2.fontsize(8)
+gui.form1.lbl2.BackColor(-2147483633)
+gui.form1.lbl3.create(label)
+gui.form1.lbl3.caption("Bin:")
+gui.form1.lbl3.backstyle(0)
+gui.form1.lbl3.visible(True)
+gui.form1.lbl3.size(405,255)
+gui.form1.lbl3.zorder(0)
+gui.form1.lbl3.position(575,800)
+gui.form1.lbl3.enabled(True)
+gui.form1.lbl3.alignment(0)
+gui.form1.lbl3.fontname("Arial")
+gui.form1.lbl3.fontsize(8)
+gui.form1.lbl3.BackColor(-2147483633)
+gui.form1.cmdSave.create(button)
+gui.form1.cmdSave.caption("Save")
+gui.form1.cmdSave.visible(True)
+gui.form1.cmdSave.size(855,375)
+gui.form1.cmdSave.zorder(0)
+gui.form1.cmdSave.position(1245,1900)
+gui.form1.cmdSave.enabled(True)
+gui.form1.cmdSave.fontname("Arial")
+gui.form1.cmdSave.fontsize(8)
+gui.form1.cmdSave.event(click,cmdsave_click)
+gui.form1.txtLot.create(textbox)
+gui.form1.txtLot.text("")
+gui.form1.txtLot.visible(True)
+gui.form1.txtLot.size(1635,300)
+gui.form1.txtLot.zorder(0)
+gui.form1.txtLot.position(1000,415)
+gui.form1.txtLot.enabled(False)
+gui.form1.txtLot.alignment(0)
+gui.form1.txtLot.fontname("Arial")
+gui.form1.txtLot.fontsize(8)
+gui.form1.txtLot.BackColor(-2147483643)
+gui.form1.txtBin.create(textbox)
+gui.form1.txtBin.text("")
+gui.form1.txtBin.visible(True)
+gui.form1.txtBin.size(990,300)
+gui.form1.txtBin.zorder(0)
+gui.form1.txtBin.position(1000,745)
+gui.form1.txtBin.enabled(False)
+gui.form1.txtBin.alignment(0)
+gui.form1.txtBin.fontname("Arial")
+gui.form1.txtBin.fontsize(8)
+gui.form1.txtBin.BackColor(-2147483643)
+
+
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+
+Variable.Global.bScreen.Declare(Boolean,False)
+
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+' 1/5/09
+' edited 3/3/09 to put on post-save hook and only update most recent item_history rec
+' Reason entry for lot/bin records
+' JSO
+' Originally for We Pack It All
+' Hooks:  26714 (post-save)
+
+Variable.Local.sPath.Declare(String)
+Variable.Local.iHandle.Declare(Long)
+Variable.local.bExists.declare(Boolean)
+Variable.Local.sLine.Declare(String)
+Variable.Local.EOF.Declare(Boolean)
+Variable.Local.sLineRet.Declare(String)
+Variable.global.sPart.Declare(String)
+Variable.global.sLocation.Declare(String)
+Variable.global.sBin.Declare(String)
+Variable.global.sLot.Declare(String)
+Variable.global.sHeat.Declare(String)
+Variable.global.sSerial.Declare(String)
+Variable.global.fQty.declare(Float)
+
+Variable.Local.sPath.Set(Variable.passed.888888)
+'Variable.Local.sPath.Set("c:\LOTBIN.TXT")
+
+Function.ODBC.connection!Con.Openconnection(Variable.Ambient.pdsn,Variable.Ambient.PUser,Variable.Ambient.PPass)
+
+Function.Intrinsic.File.Exists(Variable.Local.sPath,Variable.Local.bExists)
+Function.Intrinsic.Control.If(Variable.local.bExists,=,True)
+
+	Function.Intrinsic.File.GetHandle(Variable.Local.iHandle)
+	Function.Intrinsic.File.OpenForRead(Variable.Local.sPath,Variable.Local.iHandle)
+	Function.Intrinsic.Control.Do
+		Function.Intrinsic.File.EOF(Variable.Local.iHandle,Variable.Local.EOF)
+		Function.Intrinsic.Control.If(Variable.Local.EOF,=,True)
+			Function.Intrinsic.Control.ExitDo
+		Function.Intrinsic.Control.EndIf
+		Function.intrinsic.file.readline(Variable.local.iHandle,Variable.local.sLine)
+		Function.Intrinsic.String.Split(Variable.Local.sLine,",",Variable.Local.sLineRet)
+		Variable.global.sPart.Set(Variable.local.sLineRet(0))
+		Variable.global.sLocation.Set(Variable.local.sLineRet(1))
+		Variable.global.sBin.Set(Variable.local.sLineRet(2))
+		Variable.global.sLot.Set(Variable.local.sLineRet(3))
+		Variable.global.sHeat.Set(Variable.local.sLineRet(4))
+		Variable.global.sSerial.Set(Variable.local.sLineRet(5))
+		Variable.Global.bScreen.Set(False)
+		Gui.form1.txtBin.text(Variable.global.sBin)
+		Gui.form1.txtLot.text(Variable.global.sLot)
+		Gui.form1..Show
+		Function.Intrinsic.Control.DoUntil(Variable.Global.bScreen,=,True)
+			Function.intrinsic.UI.Sleep(1)
+			Function.Intrinsic.Control.DoEvents
+		Function.Intrinsic.Control.Loop
+		
+	Function.Intrinsic.Control.loop
+	
+Function.intrinsic.control.endif
+
+Function.ODBC.Connection!Con.Close
+
+Function.Intrinsic.Control.End
+
+
+Program.Sub.Main.End
+
+program.sub.cmdsave_click.start
+Variable.Local.sSql.Declare(String)
+
+Function.Intrinsic.Control.If(Variable.Screen.form1!txtReason.Text,>,"")
+	Function.Intrinsic.String.Concat("select * from item_history where part = '",Variable.global.sPart,"' and location = '",Variable.global.sLocation,"'and lot = '",Variable.Global.sLot,"' and bin = '",Variable.Global.sBin,"' and heat = '",Variable.Global.sHeat,"' and serial_number = '",Variable.global.sSerial,"' order by date_history, time_item_history desc",Variable.Local.sSql)
+'	Function.Intrinsic.string.Concat("update item_history set reference = '",Variable.Screen.form1!txtReason.Text,"' where part = '",Variable.global.sPart,"' and location = '",Variable.Global.sLocation,"' and lot = '",Variable.Global.sLot,"' and bin = '",Variable.Global.sBin,"' and heat = '",Variable.Global.sHeat,"' and serial_number = '",Variable.global.sSerial,"'",Variable.Local.sSql)
+	Function.ODBC.Connection!Con.OpenRecordsetRW("rst1",Variable.Local.sSql)
+	Function.intrinsic.Control.If(Variable.ODBC.Con!rst1.EOF,<>,True)
+		Function.ODBC.Con!rst1.set!reference(Variable.Screen.form1!txtReason.Text)
+		Function.ODBC.Con!rst1.Update
+	Function.Intrinsic.Control.endif
+	Function.ODBC.Con!rst1.Close
+Function.Intrinsic.Control.endif
+
+Variable.Global.bScreen.Set(True)
+Gui.form1.txtReason.Text("")
+Gui.form1..Visible(false)
+
+
+program.sub.cmdsave_click.end
+
+program.sub.form1_unload.start
+Variable.Global.bScreen.Set(True)
+Gui.form1.txtReason.Text("")
+Gui.form1..Visible(false)
+
+
+program.sub.form1_unload.end
+
+
